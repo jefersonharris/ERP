@@ -160,6 +160,6 @@ SIMPLE_JWT = {
 # Configurações para CORS
 CORS_ALLOW_ALL_ORIGINS = True  # Apenas para desenvolvimento
 # Em produção, especificar origens permitidas
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",
-# ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
