@@ -18,7 +18,6 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="w-full max-w-xl shadow-lg">
         {" "}
-        {/* Aumentei max-w-xl */}
         <CardHeader>
           <CardTitle className="text-3xl text-center">Login</CardTitle>
         </CardHeader>
@@ -49,7 +48,7 @@ export function LoginForm({
             <div className="mt-4 text-center text-sm">
               Não possui acesso?{" "}
               <a href="/register" className="underline underline-offset-4">
-                Cadastrar-me
+                Cadastre-se
               </a>
             </div>
           </form>

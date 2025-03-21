@@ -1,6 +1,7 @@
 import {
   BookOpen,
   Bot,
+  BoxIcon,
   Command,
   Frame,
   LifeBuoy,
@@ -19,21 +20,25 @@ export const data = {
   },
   navMain: [
     {
-      title: "Playground",
+      title: "Produto",
       url: "#",
-      icon: SquareTerminal,
+      icon: BoxIcon,
       isActive: true,
       items: [
         {
-          title: "History",
+          title: "Solicitar Cadastro",
           url: "#",
         },
         {
-          title: "Starred",
+          title: "Solicitar Cotação",
           url: "#",
         },
         {
-          title: "Settings",
+          title: "Solicitar Desenvolvimento",
+          url: "#",
+        },
+        {
+          title: "Manual do Código",
           url: "#",
         },
       ],
