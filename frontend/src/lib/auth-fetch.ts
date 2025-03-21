@@ -10,7 +10,6 @@ export async function authFetch(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  // Só define Content-Type como application/json se NÃO for FormData
   const isFormData = options.body instanceof FormData;
   if (!isFormData) {
     headers.set("Content-Type", "application/json");

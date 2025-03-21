@@ -10,7 +10,5 @@ urlpatterns = [
     path("register/", RegisterUserView.as_view(), name="register"),
     path("login/", EmailLoginView.as_view(), name="login"),
     path("me/", CurrentUserView.as_view(), name="current-user"),
-    path(
-        "me/update/", UpdateUserView.as_view(), name="update-user"
-    ),  # ✅ Rota de edição
+    path("me/update/", UpdateUserView.as_view(), name="update-user"),
 ]

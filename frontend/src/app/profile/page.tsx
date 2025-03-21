@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
-// Função para gerar iniciais do nome
+// Utilitário para gerar iniciais
 function getInitials(first: string, last: string) {
-  const firstInitial = first?.trim()?.[0]?.toUpperCase() ?? "";
-  const lastInitial = last?.trim()?.[0]?.toUpperCase() ?? "";
-  return firstInitial + lastInitial;
+  const f = first?.trim()?.[0]?.toUpperCase() ?? "";
+  const l = last?.trim()?.[0]?.toUpperCase() ?? "";
+  return `${f}${l}`;
 }
 
 export default function ProfilePage() {
@@ -26,14 +26,15 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await authFetch("http://localhost:8000/api/users/me/");
+        const res = await authFetch("/api/users/me/");
         const data = await res.json();
         setFirstName(data.first_name);
         setLastName(data.last_name);
         setJobTitle(data.job_title);
-        setAvatarPreview(data.avatar || null); // ✅ URL já vem completa do backend
+        setAvatarPreview(data.avatar || null); // URL completa do Django
       } catch (err) {
-        console.error("Erro ao buscar dados do usuário", err);
+        console.error("Erro ao buscar usuário:", err);
+        toast.error("Erro ao carregar perfil");
       }
     };
 
@@ -44,7 +45,7 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (file) {
       setAvatarFile(file);
-      setAvatarPreview(URL.createObjectURL(file)); // preview temporário
+      setAvatarPreview(URL.createObjectURL(file)); // preview local
     }
   };
 
@@ -55,28 +56,25 @@ export default function ProfilePage() {
     formData.append("first_name", firstName.trim());
     formData.append("last_name", lastName.trim());
     formData.append("job_title", jobTitle.trim());
-    if (avatarFile) {
-      formData.append("avatar", avatarFile);
-    }
+    if (avatarFile) formData.append("avatar", avatarFile);
 
     try {
-      const res = await authFetch(
-        "http://localhost:8000/api/users/me/update/",
-        {
-          method: "PATCH",
-          body: formData,
-        }
-      );
+      const res = await authFetch("/api/users/me/update/", {
+        method: "PATCH",
+        body: formData,
+      });
 
       if (res.ok) {
-        toast("Perfil atualizado com sucesso!");
+        toast.success("Perfil atualizado com sucesso!");
       } else {
         const err = await res.json();
-        toast.error("Erro ao atualizar: " + JSON.stringify(err));
+        toast.error("Erro ao atualizar perfil", {
+          description: JSON.stringify(err),
+        });
       }
-    } catch (error) {
+    } catch (err) {
       toast.error("Erro inesperado ao atualizar");
-      console.error(error);
+      console.error(err);
     }
   };
 
@@ -89,19 +87,17 @@ export default function ProfilePage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex items-center gap-4">
-              <Avatar className="h-30 w-30">
+              <Avatar className="h-16 w-16">
                 {avatarPreview ? (
-                  <AvatarImage src={avatarPreview} alt="Avatar do usuário" />
+                  <AvatarImage src={avatarPreview} alt="Foto de perfil" />
                 ) : (
                   <AvatarFallback>
                     {getInitials(firstName, lastName)}
                   </AvatarFallback>
                 )}
               </Avatar>
-              <div className="flex flex-col">
-                <Label className="mb-2" htmlFor="avatar">
-                  Foto de Perfil
-                </Label>
+              <div>
+                <Label htmlFor="avatar">Foto de Perfil</Label>
                 <Input
                   id="avatar"
                   type="file"
@@ -113,9 +109,7 @@ export default function ProfilePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="mb-2" htmlFor="firstName">
-                  Nome
-                </Label>
+                <Label htmlFor="firstName">Nome</Label>
                 <Input
                   id="firstName"
                   value={firstName}
@@ -124,9 +118,7 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <Label className="mb-2" htmlFor="lastName">
-                  Sobrenome
-                </Label>
+                <Label htmlFor="lastName">Sobrenome</Label>
                 <Input
                   id="lastName"
                   value={lastName}
@@ -137,9 +129,7 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <Label className="mb-2" htmlFor="jobTitle">
-                Cargo
-              </Label>
+              <Label htmlFor="jobTitle">Cargo</Label>
               <Input
                 id="jobTitle"
                 value={jobTitle}

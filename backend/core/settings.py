@@ -123,6 +123,7 @@ SIMPLE_JWT = {
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://172.16.6.135:3000",  # seu front
 ]
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

@@ -33,7 +33,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const res = await authFetch("http://localhost:8000/api/users/me/");
+        const res = await authFetch("/api/users/me/");
         const data = await res.json();
         setUser(data);
       } catch (err) {

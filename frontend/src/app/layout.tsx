@@ -9,7 +9,7 @@ import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { usePathname } from "next/navigation";
 import { Toaster } from "@/components/ui/sonner";
-import { UserProvider } from "@/providers/user-provider"; // ✅ import adicionado
+import { UserProvider } from "@/providers/user-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,11 +23,11 @@ const geistMono = Geist_Mono({
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   const pathname = usePathname();
-  const isAuthPage = pathname === "/login" || pathname === "/register";
+  const isAuthPage = ["/login", "/register"].includes(pathname);
 
   return (
     <html lang="pt-BR" suppressHydrationWarning>

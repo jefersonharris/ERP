@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function LoginForm({
   className,
@@ -19,21 +20,33 @@ export function LoginForm({
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch("http://127.0.0.1:8000/api/users/login/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/login/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
-    if (res.ok) {
-      const data = await res.json();
-      localStorage.setItem("access", data.access);
-      localStorage.setItem("refresh", data.refresh);
-      // alert("Login realizado!");
-      router.push("/dashboard"); // ajuste o destino conforme seu app
-    } else {
-      const err = await res.json();
-      alert("Erro ao logar: " + JSON.stringify(err));
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem("access", data.access);
+        localStorage.setItem("refresh", data.refresh);
+        toast.success("Login realizado com sucesso!");
+        router.push("/dashboard");
+      } else {
+        const error = await res.json();
+        toast.error("Erro ao logar", {
+          description: error.detail || "Credenciais inválidas",
+        });
+      }
+    } catch (err) {
+      console.error("Erro de conexão:", err);
+      toast.error("Erro ao conectar com o servidor");
     }
   };
 
@@ -53,6 +66,7 @@ export function LoginForm({
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  placeholder="seu@email.com"
                   required
                 />
               </div>
@@ -67,7 +81,7 @@ export function LoginForm({
                 />
               </div>
               <Button type="submit" className="w-full">
-                Login
+                Entrar
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">

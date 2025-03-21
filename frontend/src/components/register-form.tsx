@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useRouter } from "next/navigation";
 
 export function RegisterForm({
   className,
@@ -24,27 +26,46 @@ export function RegisterForm({
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (password !== passwordConfirm) {
+      toast.error("As senhas não coincidem.");
+      return;
+    }
+
     const payload = {
-      first_name: firstName,
-      last_name: lastName,
-      job_title: jobTitle,
-      email,
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      email: email.trim().toLowerCase(),
+      job_title: jobTitle.trim(),
       password,
       password_confirm: passwordConfirm,
     };
 
-    const res = await fetch("http://127.0.0.1:8000/api/users/register/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/register/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
 
-    if (res.ok) {
-      alert("Usuário cadastrado com sucesso!");
-      router.push("/login");
-    } else {
-      const err = await res.json();
-      alert("Erro ao cadastrar: " + JSON.stringify(err));
+      if (res.ok) {
+        toast.success("Cadastro realizado com sucesso!");
+        router.push("/login");
+      } else {
+        const err = await res.json();
+        toast.error("Erro ao cadastrar", {
+          description:
+            err?.email?.[0] ||
+            err?.password?.[0] ||
+            err?.non_field_errors?.[0] ||
+            "Erro inesperado",
+        });
+      }
+    } catch (error) {
+      console.error("Erro:", error);
+      toast.error("Erro de conexão com o servidor.");
     }
   };
 
@@ -81,6 +102,7 @@ export function RegisterForm({
                   />
                 </div>
               </div>
+
               <div className="grid gap-3">
                 <Label htmlFor="email">E-mail</Label>
                 <Input
@@ -88,10 +110,11 @@ export function RegisterForm({
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nome@exemplo.com"
+                  placeholder="nome@empresa.com"
                   required
                 />
               </div>
+
               <div className="grid gap-3">
                 <Label htmlFor="job_title">Cargo</Label>
                 <Input
@@ -103,32 +126,37 @@ export function RegisterForm({
                   required
                 />
               </div>
-              <div className="grid gap-3">
-                <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+
+              <div className="grid md:grid-cols-2 gap-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="password">Senha</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="password_confirm">Confirme a senha</Label>
+                  <Input
+                    id="password_confirm"
+                    type="password"
+                    value={passwordConfirm}
+                    onChange={(e) => setPasswordConfirm(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
-              <div className="grid gap-3">
-                <Label htmlFor="password_confirm">Confirme a senha</Label>
-                <Input
-                  id="password_confirm"
-                  type="password"
-                  value={passwordConfirm}
-                  onChange={(e) => setPasswordConfirm(e.target.value)}
-                  required
-                />
-              </div>
+
               <Button type="submit" className="w-full">
                 Cadastrar
               </Button>
             </div>
+
             <div className="mt-4 text-center text-sm">
-              Já possuo cadastro?{" "}
+              Já possui cadastro?{" "}
               <a href="/login" className="underline underline-offset-4">
                 Fazer login
               </a>
