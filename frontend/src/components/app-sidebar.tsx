@@ -1,20 +1,9 @@
 "use client";
 
-import * as React from "react";
-import { data } from "@/app/data/data-sidebar";
-import {
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Command } from "lucide-react";
 
+import { data } from "@/app/data/data-sidebar";
 import { NavMain } from "@/components/nav-main";
 import { NavProjects } from "@/components/nav-projects";
 import { NavSecondary } from "@/components/nav-secondary";
@@ -29,7 +18,32 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
+import { authFetch } from "@/lib/auth-fetch";
+
+type UserData = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  avatar: string | null;
+};
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [user, setUser] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const res = await authFetch("http://localhost:8000/api/users/me/");
+        const data = await res.json();
+        setUser(data);
+      } catch (err) {
+        console.error("Erro ao carregar usuário:", err);
+      }
+    }
+
+    fetchUser();
+  }, []);
+
   return (
     <Sidebar
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
@@ -52,13 +66,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
+
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );

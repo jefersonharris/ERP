@@ -2,11 +2,14 @@
 
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { usePathname } from "next/navigation";
+import { Toaster } from "@/components/ui/sonner";
+import { UserProvider } from "@/providers/user-provider"; // ✅ import adicionado
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +30,7 @@ export default function RootLayout({
   const isAuthPage = pathname === "/login" || pathname === "/register";
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -37,21 +40,24 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {isAuthPage ? (
-            <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
-              {children}
-            </div>
-          ) : (
-            <div className="[--header-height:calc(--spacing(14))]">
-              <SidebarProvider className="flex flex-col">
-                <SiteHeader />
-                <div className="flex flex-1">
-                  <AppSidebar />
-                  <SidebarInset>{children}</SidebarInset>
-                </div>
-              </SidebarProvider>
-            </div>
-          )}
+          <UserProvider>
+            {isAuthPage ? (
+              <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
+                {children}
+              </div>
+            ) : (
+              <div className="[--header-height:calc(--spacing(14))]">
+                <SidebarProvider className="flex flex-col">
+                  <SiteHeader />
+                  <div className="flex flex-1">
+                    <AppSidebar />
+                    <SidebarInset>{children}</SidebarInset>
+                  </div>
+                </SidebarProvider>
+              </div>
+            )}
+            <Toaster />
+          </UserProvider>
         </ThemeProvider>
       </body>
     </html>

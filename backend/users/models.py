@@ -1,46 +1,47 @@
 from django.db import models
-from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    PermissionsMixin,
+    BaseUserManager,
+)
+from django.utils import timezone
 
 
-class UserProfile(models.Model):
-    """
-    Modelo para armazenar informações adcicionais do usuário
-    """
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("O e-mail é obrigatório")
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        return self.create_user(email, password, **extra_fields)
+
+
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=80)
     last_name = models.CharField(max_length=120)
     job_title = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    # ✅ Suporte ao avatar
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["first_name", "last_name", "job_title"]
+
+    objects = CustomUserManager()
+
     def __str__(self):
-        return f"{self.last_name} {self.last_name}"
+        return f"{self.email} - {self.get_full_name()}"
 
-
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    """
-    Cria um perfil de usuário automaticamente quando um novo usuário é criado
-    """
-    if created:
-        UserProfile.objects.create(
-            user=instance,
-            first_name=instance.first_name,
-            last_name=instance.last_name,
-            email=instance.email,  # Mantém sincronizado com o User
-        )
-
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    """
-    Salva o perfil do usuário quando o usuário é atualizado
-    """
-    instance.profile.first_name = instance.first_name
-    instance.profile.last_name = instance.last_name
-    instance.profile.email = instance.email
-    instance.profile.save()
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"
